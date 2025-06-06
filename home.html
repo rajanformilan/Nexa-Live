@@ -48,7 +48,7 @@
     }
     .badge {
       font-size: 12px;
-      background: red;
+      background: green;
       color: white;
       padding: 3px 10px;
       border-radius: 20px;
@@ -105,7 +105,7 @@
       <img src="" id="profilePic" class="profile-pic" alt="Profile">
       <div class="edit-icon" onclick="document.getElementById('fileInput').click()">✏️</div>
       <input type="file" id="fileInput" style="display:none" onchange="updatePic(event)" />
-      <div class="username" id="username">User <span class="badge" id="status">Offline</span></div>
+      <div class="username" id="username">User <span class="badge" id="status">Online</span></div>
       <div class="stats">
         <div><div class="stat" id="coinCount">0</div>Coins</div>
         <div><div class="stat" id="followerCount">0</div>Followers</div>
@@ -137,10 +137,15 @@
   </div>
 
   <script>
-    const username = localStorage.getItem("loggedInUser") || "User";
+    const username = localStorage.getItem("loggedInUser");
+    if (!username) {
+      alert("You're not logged in.");
+      window.location.href = "login.html";
+    }
+
     const coins = parseInt(localStorage.getItem(username + "_coins")) || 0;
     const followers = parseInt(localStorage.getItem(username + "_followers")) || 0;
-    const pic = localStorage.getItem(username + "_profilePic") || "https://i.pravatar.cc/150?img=7";
+    const pic = localStorage.getItem(username + "_profilePic") || "https://i.pravatar.cc/150?u=" + username;
     const refer = localStorage.getItem(username + "_refer") || "ABC123";
     const earnings = parseInt(localStorage.getItem(username + "_dailyEarnings")) || 0;
 
@@ -167,7 +172,6 @@
     }
 
     function withdraw() {
-      alert("Redirecting to withdraw page...");
       window.location.href = "withdraw.html";
     }
 
@@ -176,19 +180,24 @@
     }
 
     function logout() {
+      localStorage.removeItem("loggedInUser");
       localStorage.setItem("loggedIn", "false");
-      window.location.href = "signup.html";
+      window.location.href = "login.html";
     }
 
-    // Posts
+    // Display posts
     const posts = JSON.parse(localStorage.getItem(username + "_posts")) || [];
     const postContainer = document.getElementById("posts");
-    posts.forEach((post, i) => {
-      const div = document.createElement("div");
-      div.className = "post";
-      div.textContent = post;
-      postContainer.appendChild(div);
-    });
+    if (posts.length === 0) {
+      postContainer.innerHTML = "<p>No posts yet.</p>";
+    } else {
+      posts.forEach((post) => {
+        const div = document.createElement("div");
+        div.className = "post";
+        div.textContent = post;
+        postContainer.appendChild(div);
+      });
+    }
   </script>
 </body>
 </html>
