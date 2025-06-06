@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Party Broadband Live</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #222;
+      width: 100%;
+      padding: 10px 20px;
+      gap: 20px;
+    }
+
+    #profile, #timer {
+      font-size: 16px;
+    }
+
+    #live-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+    }
+
+    #local-player {
+      width: 100%;
+      height: 100vh;
+      object-fit: cover;
+      background: black;
+    }
+
+    .controls {
+      position: absolute;
+      bottom: 100px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .controls button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 30px;
+      color: white;
+    }
+
+    #gift-btn {
+      position: absolute;
+      bottom: 40px;
+      display: flex;
+      align-items: center;
+      font-size: 16px;
+      padding: 8px 12px;
+      background: gold;
+      border-radius: 5px;
+      color: black;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    #gift-btn img {
+      width: 20px;
+      margin-left: 8px;
+    }
+
+    .gift-animation {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(1);
+      transition: transform 1s ease-out, opacity 1s ease-out;
+      opacity: 1;
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div id="profile">My Coins: <span id="coin-count">0</span></div>
+    <div><strong>Party Broadband LIVE</strong></div>
+    <div id="timer">00:00</div>
+  </header>
+
+  <div id="live-container">
+    <video id="local-player" autoplay muted playsinline></video>
+  </div>
+
+  <div class="controls">
+    <button id="mute-btn" onclick="toggleMute()">🎤</button>
+    <button id="pause-btn" onclick="togglePause()">⏸️</button>
+  </div>
+
+  <button id="gift-btn" onclick="sendGift()">
+    Send Gift +10
+    <img src="https://cdn-icons-png.flaticon.com/512/833/833472.png" alt="coin" />
+  </button>
+
+  <script>
+    let coinBalance = parseInt(localStorage.getItem("coins")) || 0;
+    let stream = null;
+    let audioTrack = null;
+    let videoPaused = false;
+    let muted = false;
+
+    document.getElementById("coin-count").textContent = coinBalance;
+
+    // Timer and earnings
+    let timerInterval, earningInterval;
+    let secondsElapsed = 0;
+
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        secondsElapsed++;
+        const minutes = String(Math.floor(secondsElapsed / 60)).padStart(2, "0");
+        const seconds = String(secondsElapsed % 60).padStart(2, "0");
+        document.getElementById("timer").textContent = `${minutes}:${seconds}`;
+      }, 1000);
+    }
+
+    function startEarningCoins() {
+      earningInterval = setInterval(() => {
+        coinBalance += 1000 / 60;
+        coinBalance = Math.floor(coinBalance);
+        localStorage.setItem("coins", coinBalance);
+        document.getElementById("coin-count").textContent = coinBalance;
+      }, 60000);
+    }
+
+    function stopTimer() {
+      clearInterval(timerInterval);
+    }
+
+    function stopEarningCoins() {
+      clearInterval(earningInterval);
+    }
+
+    async function startLiveStream() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById("local-player").srcObject = stream;
+        audioTrack = stream.getAudioTracks()[0];
+
+        startTimer();
+        startEarningCoins();
+      } catch (err) {
+        alert("Could not access camera/microphone.");
+        console.error(err);
+      }
+    }
+
+    function toggleMute() {
+      if (!audioTrack) return;
+      muted = !muted;
+      audioTrack.enabled = !muted;
+      document.getElementById("mute-btn").textContent = muted ? "🔇" : "🎤";
+    }
+
+    function togglePause() {
+      const video = document.getElementById("local-player");
+      if (!stream) return;
+
+      videoPaused = !videoPaused;
+      const videoTrack = stream.getVideoTracks()[0];
+      videoTrack.enabled = !videoPaused;
+
+      if (videoPaused) {
+        stopTimer();
+        stopEarningCoins();
+        document.getElementById("pause-btn").textContent = "▶️";
+      } else {
+        startTimer();
+        startEarningCoins();
+        document.getElementById("pause-btn").textContent = "⏸️";
+      }
+    }
+
+    function sendGift() {
+      coinBalance += 10;
+      localStorage.setItem("coins", coinBalance);
+      document.getElementById("coin-count").textContent = coinBalance;
+
+      const giftIcon = document.createElement("img");
+      giftIcon.src = "https://cdn-icons-png.flaticon.com/512/833/833472.png";
+      giftIcon.className = "gift-animation";
+      document.body.appendChild(giftIcon);
+
+      setTimeout(() => {
+        giftIcon.style.transform = "translate(-50%, -100%) scale(2)";
+        giftIcon.style.opacity = "0";
+      }, 10);
+
+      setTimeout(() => {
+        giftIcon.remove();
+      }, 1100);
+    }
+
+    startLiveStream();
+  </script>
+</body>
+</html>
