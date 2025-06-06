@@ -1,94 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Login</title>
   <style>
     body {
-      font-family: Arial;
+      font-family: Arial, sans-serif;
       background: #f4f4f4;
       display: flex;
-      height: 100vh;
       justify-content: center;
       align-items: center;
+      height: 100vh;
     }
-    .container {
+    .login-box {
       background: white;
       padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-      width: 320px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      width: 300px;
     }
-    input, button {
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    input {
       width: 100%;
       padding: 10px;
       margin-top: 10px;
-      box-sizing: border-box;
+      border-radius: 6px;
+      border: 1px solid #ccc;
     }
     button {
-      background: #007bff;
+      width: 100%;
+      padding: 10px;
+      margin-top: 20px;
+      background: #28a745;
       color: white;
+      font-weight: bold;
       border: none;
+      border-radius: 6px;
       cursor: pointer;
     }
-    .message {
-      margin-top: 10px;
-      font-size: 14px;
-    }
-    a {
-      display: block;
-      margin-top: 15px;
-      text-align: center;
-      color: #007bff;
-      text-decoration: none;
+    button:hover {
+      background: #218838;
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="login-box">
     <h2>Login</h2>
-    <input type="text" id="username" placeholder="Username" />
-    <input type="email" id="email" placeholder="Email" />
-    <input type="password" id="password" placeholder="Password" />
+    <input type="text" id="username" placeholder="Username" required>
+    <input type="password" id="password" placeholder="Password" required>
     <button onclick="login()">Login</button>
-    <div class="message" id="message"></div>
-    <a href="signup.html">Don't have an account? Signup here</a>
   </div>
 
   <script>
-    if (localStorage.getItem("loggedIn") === "true") {
-      window.location.href = "home.html"; // Already logged in
-    }
-
     function login() {
       const username = document.getElementById("username").value.trim();
-      const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value.trim();
 
-      const savedUser = JSON.parse(localStorage.getItem("user"));
-
-      if (!savedUser) {
-        showMessage("No user found. Please sign up first.", "red");
+      if (!username || !password) {
+        alert("Please enter username and password.");
         return;
       }
 
-      if (
-        username === savedUser.username &&
-        email === savedUser.email &&
-        password === savedUser.password
-      ) {
-        localStorage.setItem("loggedIn", "true");
-        localStorage.setItem("currentUser", JSON.stringify(savedUser));
-        window.location.href = "home.html";
-      } else {
-        showMessage("Invalid username, email, or password.", "red");
-      }
-    }
+      // Simple login logic (you can replace with actual check)
+      localStorage.setItem("loggedInUser", username);
 
-    function showMessage(msg, color) {
-      const el = document.getElementById("message");
-      el.textContent = msg;
-      el.style.color = color;
+      // Optional: initialize balance
+      if (!localStorage.getItem(username + "_coins")) {
+        localStorage.setItem(username + "_coins", "1500"); // default Rs 1500
+      }
+
+      window.location.href = "home.html";
     }
   </script>
 </body>
