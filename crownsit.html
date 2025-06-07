@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Crown Party Room</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(to right, #330066, #800080);
+      font-family: Arial, sans-serif;
+      color: white;
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 10px;
+    }
+
+    .room {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      max-width: 400px;
+      margin: 20px auto;
+    }
+
+    .seat {
+      background: #4a0066;
+      border-radius: 12px;
+      padding: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+      position: relative;
+      box-shadow: 0 0 8px #00000066;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 80px;
+    }
+
+    .seat:hover {
+      background: #5c0080;
+    }
+
+    .seat.taken {
+      background: gold;
+      color: black;
+    }
+
+    .seat .number {
+      font-size: 12px;
+      opacity: 0.6;
+      position: absolute;
+      top: 6px;
+      left: 8px;
+    }
+
+    .seat .user {
+      margin-top: 6px;
+      font-size: 16px;
+      word-break: break-word;
+    }
+
+    /* Plus icon style for empty seat */
+    .seat.empty .plus-icon {
+      font-size: 36px;
+      color: #c0a0ff;
+      user-select: none;
+      line-height: 1;
+      font-weight: bold;
+      transition: color 0.3s;
+    }
+
+    .seat.empty:hover .plus-icon {
+      color: #e0d0ff;
+    }
+
+    #status {
+      margin-top: 15px;
+      color: lightgreen;
+      min-height: 48px;
+      font-weight: bold;
+    }
+
+    #setup {
+      margin-bottom: 20px;
+    }
+
+    #leaveSeatBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #800080;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    #leaveSeatBtn:hover {
+      background: #5c005c;
+    }
+
+    /* Profile pic styling inside seat */
+    .seat img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-top: 10px;
+      object-fit: cover;
+      border: 2px solid #333;
+      box-shadow: 0 0 4px #222;
+    }
+  </style>
+</head>
+<body>
+  <h2>👑 Crown Party Room</h2>
+  <div id="setup">
+    <p>Welcome, <strong id="userDisplay"></strong></p>
+    <p>Your coins: <span id="coinsDisplay">0</span></p>
+  </div>
+
+  <div class="room" id="roomGrid"></div>
+
+  <button id="leaveSeatBtn">Leave Seat</button>
+
+  <div id="status"></div>
+
+  <script>
+    // Get or prompt for username
+    let username = localStorage.getItem("username");
+
+    while (!username || username.includes("@") || username.includes(" ")) {
+      if (username) alert("Please enter a simple username without spaces or email.");
+      username = prompt("Enter your username:");
+      if (username) username = username.trim();
+      localStorage.setItem("username", username);
+    }
+
+    // Get or prompt for profile picture URL
+    let profilePic = localStorage.getItem("profilePic");
+    if (!profilePic) {
+      profilePic = prompt("Enter your profile picture URL (or leave blank for default):");
+      if (!profilePic) profilePic = "https://i.pravatar.cc/60"; // default avatar
+      localStorage.setItem("profilePic", profilePic);
+    }
+
+    const userDisplay = document.getElementById("userDisplay");
+    const coinsDisplay = document.getElementById("coinsDisplay");
+    const status = document.getElementById("status");
+
+    userDisplay.textContent = username;
+
+    const seatCount = 9;
+    const roomGrid = document.getElementById("roomGrid");
+    let seats = JSON.parse(localStorage.getItem("seats")) || Array(seatCount).fill(null);
+
+    // Coins
+    let coins = parseInt(localStorage.getItem(username + "_coins")) || 0;
+    coinsDisplay.textContent = coins;
+
+    // Reward tracking variables
+    const today = new Date().toLocaleDateString();
+
+    // Track when user started sitting (timestamp)
+    let sitStartTime = null;
+
+    // Load last sit date and total sit seconds today
+    let lastSitDate = localStorage.getItem(username + "_lastSitDate") || "";
+    let sitSecondsToday = parseInt(localStorage.getItem(username + "_sitSecondsToday")) || 0;
+
+    // Track if reward claimed today
+    let rewardClaimedDate = localStorage.getItem(username + "_rewardClaimedDate") || "";
+
+    function renderSeats() {
+      roomGrid.innerHTML = "";
+      seats.forEach((seat, index) => {
+        const div = document.createElement("div");
+        div.className = "seat";
+        const number = `<div class="number">Seat ${index + 1}</div>`;
+
+        if (seat) {
+          div.classList.add("taken");
+          div.innerHTML = `
+            ${number}
+            <img src="${seat.profilePic}" alt="${seat.name}'s profile picture" />
+            <div class="user">${seat.name}</div>
+          `;
+        } else {
+          div.classList.add("empty");
+          div.innerHTML = `
+            ${number}
+            <div class="plus-icon">+</div>
+          `;
+        }
+
+        div.onclick = () => sit(index);
+        roomGrid.appendChild(div);
+      });
+    }
+
+    function updateCoins(amount) {
+      coins += amount;
+      localStorage.setItem(username + "_coins", coins);
+      coinsDisplay.textContent = coins;
+    }
+
+    function sit(index) {
+      // If sitting on a different seat, update sit time for old seat first
+      const mySeatIndex = seats.findIndex(seat => seat && seat.name === username);
+
+      if (mySeatIndex !== -1 && mySeatIndex !== index) {
+        // User leaving previous seat - update sitSecondsToday
+        stopSittingTimer();
+        seats[mySeatIndex] = null;
+      }
+
+      // Try to sit on new seat if empty or user's own seat
+      if (!seats[index] || seats[index].name === username) {
+        seats[index] = { name: username, profilePic };
+        status.textContent = `✅ You're now sitting in Seat ${index + 1}`;
+        startSittingTimer();
+      } else {
+        status.textContent = `❌ Seat ${index + 1} is already taken by ${seats[index].name}`;
+        return;
+      }
+
+      localStorage.setItem("seats", JSON.stringify(seats));
+      renderSeats();
+    }
+
+    function leaveSeat() {
+      const mySeatIndex = seats.findIndex(seat => seat && seat.name === username);
+      if (mySeatIndex !== -1) {
+        stopSittingTimer();
+        seats[mySeatIndex] = null;
+        localStorage.setItem("seats", JSON.stringify(seats));
+        status.textContent = `✅ You left Seat ${mySeatIndex + 1}`;
+        renderSeats();
+      } else {
+        alert("You are not currently sitting on any seat.");
+      }
+    }
+
+    // Timer management
+    let sittingInterval = null;
+
+    function startSittingTimer() {
+      // If new day, reset sitSecondsToday
+      if (lastSitDate !== today) {
+        sitSecondsToday = 0;
+        lastSitDate = today;
+        localStorage.setItem(username + "_lastSitDate", today);
+        localStorage.setItem(username + "_sitSecondsToday", sitSecondsToday);
+      }
+
+      if (rewardClaimedDate === today) {
+        status.textContent = "🎉 You have already claimed today's 800 coin reward.";
+        sitStartTime = null;
+        return; // No need to track time since reward done
+      }
+
+      if (!sitStartTime) {
+        sitStartTime = Date.now();
+      }
+
+      if (sittingInterval) clearInterval(sittingInterval);
+
+      sittingInterval = setInterval(() => {
+        const now = Date.now();
+        const diffSec = Math.floor((now - sitStartTime) / 1000);
+        const totalSitSeconds = sitSecondsToday + diffSec;
+
+        // Update status with timer
+        let hours = Math.floor(totalSitSeconds / 3600);
+        let minutes = Math.floor((totalSitSeconds % 3600) / 60);
+        let seconds = totalSitSeconds % 60;
+        status.textContent = `⏳ Sitting time today: ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+
+        // Check if reached 1 hour (3600 seconds)
+        if (totalSitSeconds >= 3600 && rewardClaimedDate !== today) {
+          updateCoins(800);
+          rewardClaimedDate = today;
+          localStorage.setItem(username + "_rewardClaimedDate", today);
+          status.textContent = `🎉 Congrats! You earned 800 coins for sitting 1 hour today!`;
+          stopSittingTimer();
+        }
+      }, 1000);
+    }
+
+    function stopSittingTimer() {
+      if (sitStartTime) {
+        // Calculate how many seconds sat this session
+        const now = Date.now();
+        const diffSec = Math.floor((now - sitStartTime) / 1000);
+
+        // Add to today's total and save
+        sitSecondsToday += diffSec;
+        localStorage.setItem(username + "_sitSecondsToday", sitSecondsToday);
+        localStorage.setItem(username + "_lastSitDate", today);
+
+        sitStartTime = null;
+      }
+
+      if (sittingInterval) {
+        clearInterval(sittingInterval);
+        sittingInterval = null;
+      }
+    }
+
+    document.getElementById("leaveSeatBtn").addEventListener("click", leaveSeat);
+
+    // When user closes or reloads page, save sitting time if currently sitting
+    window.addEventListener("beforeunload", () => {
+      stopSittingTimer();
+    });
+
+    renderSeats();
+
+    // On page load, if user is already sitting, resume timer
+    const mySeatIndex = seats.findIndex(seat => seat && seat.name === username);
+    if (mySeatIndex !== -1) {
+      startSittingTimer();
+    }
+
+  </script>
+</body>
+</html>
