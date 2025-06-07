@@ -74,6 +74,7 @@
       color: white;
     }
     .live-btn { background: green; }
+    .crownsit-btn { background: purple; }
     .withdraw-btn { background: orange; }
     .dashboard-btn { background: steelblue; }
     .logout-btn { background: crimson; }
@@ -112,6 +113,7 @@
       </div>
       <div class="btn-group">
         <button class="live-btn" onclick="goLive()">Go Live</button>
+        <button class="crownsit-btn" onclick="goToCrownSit()">Party</button>
         <button class="withdraw-btn" onclick="withdraw()">Withdraw</button>
         <button class="dashboard-btn" onclick="goToDashboard()">Dashboard</button>
         <button class="logout-btn" onclick="logout()">Logout</button>
@@ -125,7 +127,7 @@
 
     <div class="refer-section">
       <h3>Refer & Earn</h3>
-      <p>Share your referral code with friends. Earn Rs 20 when they signin!</p>
+      <p>Share your referral code with friends. Earn Rs 20 when they sign in!</p>
       <div class="refer-code" id="referCode">ABC123</div>
     </div>
 
@@ -169,6 +171,10 @@
 
     function goLive() {
       window.location.href = "golive.html?user=" + encodeURIComponent(username);
+    }
+
+    function goToCrownSit() {
+      window.location.href = "crownsit.html?user=" + encodeURIComponent(username);
     }
 
     function withdraw() {
