@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Party Broadband Live</title>
   <style>
     body {
@@ -64,30 +64,78 @@
     #gift-btn {
       position: absolute;
       bottom: 40px;
-      display: flex;
-      align-items: center;
-      font-size: 16px;
-      padding: 8px 12px;
+      padding: 10px 16px;
       background: gold;
       border-radius: 5px;
       color: black;
       cursor: pointer;
       font-weight: bold;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 10;
     }
 
-    #gift-btn img {
-      width: 20px;
-      margin-left: 8px;
+    /* Gift Panel */
+    #gift-panel {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 50vh;
+      background: rgba(0, 0, 0, 0.95);
+      backdrop-filter: blur(10px);
+      color: white;
+      padding: 15px;
+      transform: translateY(100%);
+      transition: transform 0.4s ease;
+      z-index: 20;
     }
 
-    .gift-animation {
+    #gift-panel.open {
+      transform: translateY(0);
+    }
+
+    #gift-panel h3 {
+      margin-top: 0;
+      border-bottom: 1px solid gold;
+      padding-bottom: 5px;
+    }
+
+    .gift-option {
+      padding: 8px;
+      border: 1px solid #555;
+      margin: 5px 0;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .gift-option:hover {
+      background: #333;
+    }
+
+    #gift-feed {
+      margin-top: 10px;
+      max-height: 40%;
+      overflow-y: auto;
+      border-top: 1px solid #444;
+      padding-top: 10px;
+    }
+
+    .gift-feed-item {
+      margin-bottom: 5px;
+    }
+
+    #close-gift-panel {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(1);
-      transition: transform 1s ease-out, opacity 1s ease-out;
-      opacity: 1;
-      z-index: 9999;
+      top: 10px;
+      right: 20px;
+      font-size: 22px;
+      background: none;
+      border: none;
+      color: gold;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -108,10 +156,13 @@
     <button id="pause-btn" onclick="togglePause()">⏸️</button>
   </div>
 
-  <button id="gift-btn" onclick="sendGift()">
-    Send Gift +10
-    <img src="https://cdn-icons-png.flaticon.com/512/833/833472.png" alt="coin" />
-  </button>
+  <button id="gift-btn" onclick="openGiftPanel()"><a href="gifts.html">Gifts 🎁</a></button>
+
+  <!-- Gift Panel -->
+  <div id="gift-panel">
+    <button id="close-gift-panel" onclick="closeGiftPanel()">✖</button>
+    <div id="gift-feed"></div>
+  </div>
 
   <script>
     let coinBalance = parseInt(localStorage.getItem("coins")) || 0;
@@ -122,7 +173,6 @@
 
     document.getElementById("coin-count").textContent = coinBalance;
 
-    // Timer and earnings
     let timerInterval, earningInterval;
     let secondsElapsed = 0;
 
@@ -174,7 +224,6 @@
     }
 
     function togglePause() {
-      const video = document.getElementById("local-player");
       if (!stream) return;
 
       videoPaused = !videoPaused;
@@ -192,27 +241,48 @@
       }
     }
 
-    function sendGift() {
-      coinBalance += 10;
+    function openGiftPanel() {
+      document.getElementById("gift-panel").classList.add("open");
+    }
+
+    function closeGiftPanel() {
+      document.getElementById("gift-panel").classList.remove("open");
+    }
+
+    function sendGift(giftName, giftCost) {
+      if (coinBalance < giftCost) {
+        alert("Not enough coins!");
+        return;
+      }
+
+      coinBalance -= giftCost;
       localStorage.setItem("coins", coinBalance);
       document.getElementById("coin-count").textContent = coinBalance;
 
-      const giftIcon = document.createElement("img");
-      giftIcon.src = "https://cdn-icons-png.flaticon.com/512/833/833472.png";
-      giftIcon.className = "gift-animation";
-      document.body.appendChild(giftIcon);
-
-      setTimeout(() => {
-        giftIcon.style.transform = "translate(-50%, -100%) scale(2)";
-        giftIcon.style.opacity = "0";
-      }, 10);
-
-      setTimeout(() => {
-        giftIcon.remove();
-      }, 1100);
+      const feed = document.getElementById("gift-feed");
+      const sender = "You";
+      const item = document.createElement("div");
+      item.classList.add("gift-feed-item");
+      item.innerHTML = `<strong>${sender}</strong> sent <span>${giftName}</span> <small>(${giftCost} coins)</small>`;
+      feed.prepend(item);
     }
 
     startLiveStream();
+    
+    function showGiftAnimation(sender, gift) {
+  const anim = document.createElement("div");
+  anim.className = "gift-animation";
+  anim.innerHTML = `<div>${sender} sent<br><strong>${gift.name}</strong></div><img src="${gift.img}" alt="${gift.name}" />`;
+  document.body.appendChild(anim);
+
+  setTimeout(() => {
+    anim.style.opacity = 0;
+    anim.style.transform = "translate(-50%, -150%) scale(1.5)";
+  }, 100);
+
+  setTimeout(() => anim.remove(), 1600);
+}
+
   </script>
 </body>
 </html>
