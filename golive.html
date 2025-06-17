@@ -223,6 +223,29 @@
       font-size: 40px;
       user-select: none;
     }
+    
+    /* Gift Panel */
+#gift-panel {
+  position: fixed;
+  bottom: -100%;
+  left: 0;
+  width: 100%;
+  height: 60vh; /* Fixed height */
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(10px);
+  color: white;
+  padding: 15px;
+  transition: bottom 0.4s ease;
+  z-index: 30;
+  overflow-y: auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+#gift-panel.open {
+  bottom: 0;
+}
+
   </style>
 </head>
 <body>
@@ -501,6 +524,22 @@
 
     // Start live stream
     startLiveStream();
+    
+    
+    
+    function openGiftPanel() {
+  giftPanel.classList.add("open");
+  giftPanel.setAttribute("aria-hidden", "false");
+  giftSearch.focus();
+}
+
+function closeGiftPanel() {
+  giftPanel.classList.remove("open");
+  giftPanel.setAttribute("aria-hidden", "true");
+  selectedGift = null;
+  updateSelectedGiftUI();
+}
+
   </script>
 </body>
 </html>
