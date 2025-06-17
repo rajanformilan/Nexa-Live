@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Live Gifts Sending - 1000+ Options</title>
+<style>
+  body {
+    margin: 0; padding: 0; font-family: Arial, sans-serif; background: #121212; color: white;
+    display: flex; flex-direction: column; min-height: 100vh;
+  }
+  header {
+    background: #222; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center;
+    font-weight: bold; font-size: 18px;
+  }
+  #coin-count {
+    color: gold;
+  }
+  #senderInput {
+    margin: 10px 20px; padding: 8px 12px; font-size: 16px; border-radius: 4px; border: none; width: 200px;
+  }
+  #gift-search {
+    margin: 10px 20px; padding: 8px 12px; font-size: 16px; border-radius: 4px; border: none; width: 200px;
+  }
+  #gift-container {
+    flex: 1; padding: 10px 20px; display: grid; grid-template-columns: repeat(auto-fill,minmax(100px,1fr)); gap: 15px; overflow-y: auto;
+    background: #181818;
+  }
+  .gift-card {
+    background: #292929; border-radius: 8px; padding: 10px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; transition: background 0.3s;
+  }
+  .gift-card:hover {
+    background: #444;
+  }
+  .gift-card img {
+    width: 50px; height: 50px; object-fit: contain; margin-bottom: 6px;
+  }
+  .gift-name {
+    font-size: 14px; text-align: center; margin-bottom: 4px;
+  }
+  .gift-cost {
+    font-size: 12px; color: gold;
+  }
+  #send-button {
+    margin: 15px 20px; padding: 12px 24px; font-size: 18px; font-weight: bold;
+    background: gold; border: none; border-radius: 6px; color: black; cursor: pointer;
+    align-self: flex-start;
+    user-select: none;
+  }
+  #send-button:disabled {
+    background: #666; cursor: not-allowed;
+  }
+  #leaderboard {
+    margin: 20px; background: #222; padding: 10px; border-radius: 6px; max-height: 180px; overflow-y: auto;
+  }
+  #leaderboard h3 {
+    margin: 0 0 10px 0;
+    font-weight: bold;
+  }
+  #leaderboard ul {
+    list-style: none; margin: 0; padding: 0;
+    font-size: 14px;
+  }
+  #leaderboard ul li {
+    margin-bottom: 5px;
+  }
+
+  /* Gift send animation */
+  .gift-animation {
+    position: fixed;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+    transition: all 1s ease-out;
+    z-index: 9999;
+    text-align: center;
+    background: rgba(255 255 255 / 0.1);
+    padding: 10px 20px;
+    border-radius: 12px;
+    color: gold;
+    font-weight: bold;
+    user-select: none;
+  }
+  .gift-animation img {
+    width: 60px;
+    margin-top: 8px;
+    animation: pulse 0.6s ease-in-out infinite alternate;
+  }
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.3); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>Coins: <span id="coin-count">1000</span></div>
+  <div>
+    <input id="senderInput" placeholder="Enter your name" />
+  </div>
+</header>
+
+<input id="gift-search" placeholder="Search gifts..." />
+
+<div id="gift-container" aria-label="Gift options">
+  <!-- Gift cards go here -->
+</div>
+
+<button id="send-button" disabled>Send Gift</button>
+
+<section id="leaderboard" aria-label="Top gifters leaderboard">
+  <h3>Top Gifters</h3>
+  <ul id="giftLeaderboard"></ul>
+</section>
+
+<script>
+  // Starting coins
+  let coinBalance = parseInt(localStorage.getItem("coins")) || 1000;
+  let gifters = JSON.parse(localStorage.getItem("gifters")) || {};
+
+  // Gifts data (1000+ mixed usual and lucky)
+  const gifts = [];
+  const baseIcons = [
+    "https://cdn-icons-png.flaticon.com/512/5916/5176.png", // helicopter
+    "https://cdn-icons-png.flaticon.com/512/6708/1376.png", // camera
+    "https://cdn-icons-png.flaticon.com/512/5355/5510.png", // castle
+    "https://cdn-icons-png.flaticon.com/512/3896/7097.png", // helicopter 2
+    "https://cdn-icons-png.flaticon.com/512/1754/2350.png", // diamond
+    "https://cdn-icons-png.flaticon.com/512/644/4171.png", // chocolate
+    "https://cdn-icons-png.flaticon.com/512/1521/1234.png", // bus
+    "https://cdn-icons-png.flaticon.com/512/7632/2626.png", // heart
+    "https://cdn-icons-png.flaticon.com/512/3793/698.png", // panda
+    "https://cdn-icons-png.flaticon.com/512/5600/1432.png", // flower
+  ];
+
+  const giftNames = [
+    "Lucky Rose", "Magic Cake", "Speedy Car", "Majestic Castle", "Golden Crown", "Mystic Unicorn",
+    "Flying Plane", "Rocket Booster", "Sail Boat", "Diamond Ring", "Shiny Diamond", "Sweet Chocolate",
+    "Teddy Bear", "Shooting Star", "Color Balloon", "Fireworks", "Heart Beat", "Kiss Mark", "Magic Wand",
+    "Cupcake", "Penguin", "Guitar", "Banana", "Dragon", "Alien", "Moonlight", "Sunshine", "Ice Cream", "Book",
+    "Tiger", "Panda", "Lion", "Horse", "Camera", "Apple", "Laptop", "Flower", "Hat", "Bunny",
+    "Candle", "Champagne", "Microphone", "TV", "Bicycle", "Tractor", "Bus", "Train", "Truck", "Helicopter"
+  ];
+
+  // Generate 1000+ gifts mixing above
+  for(let i=1; i<=1000; i++) {
+    const name = giftNames[i % giftNames.length] + " #" + i;
+    const cost = 5 + (i % 50) * 5;  // Cost from 5 to 250 coins
+    const img = baseIcons[i % baseIcons.length];
+    gifts.push({ name, cost, img });
+  }
+
+  // References
+  const coinCountEl = document.getElementById("coin-count");
+  const giftContainer = document.getElementById("gift-container");
+  const sendButton = document.getElementById("send-button");
+  const senderInput = document.getElementById("senderInput");
+  const giftLeaderboard = document.getElementById("giftLeaderboard");
+  const giftSearch = document.getElementById("gift-search");
+
+  let selectedGift = null;
+
+  // Show initial coin balance
+  coinCountEl.textContent = coinBalance;
+
+  // Render gifts
+  function renderGifts(filter = "") {
+    giftContainer.innerHTML = "";
+    const filterLower = filter.toLowerCase();
+
+    gifts.filter(g => g.name.toLowerCase().includes(filterLower)).forEach((gift, idx) => {
+      const card = document.createElement("div");
+      card.className = "gift-card";
+      card.tabIndex = 0;
+      card.setAttribute("role", "button");
+      card.setAttribute("aria-pressed", "false");
+      card.innerHTML = `
+        <img src="${gift.img}" alt="${gift.name}" loading="lazy" />
+        <div class="gift-name">${gift.name}</div>
+        <div class="gift-cost">${gift.cost} coins</div>
+      `;
+      card.onclick = () => selectGift(idx);
+      card.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { selectGift(idx); e.preventDefault(); } };
+      giftContainer.appendChild(card);
+    });
+
+    updateSelectedGiftUI();
+  }
+
+  // Select a gift by index
+  function selectGift(idx) {
+    selectedGift = gifts[idx];
+    updateSelectedGiftUI();
+  }
+
+  // Update UI for selected gift and send button enabled/disabled
+  function updateSelectedGiftUI() {
+    const cards = document.querySelectorAll(".gift-card");
+    cards.forEach((card, i) => {
+      if (selectedGift && gifts[i].name === selectedGift.name) {
+        card.style.border = "2px solid gold";
+        card.setAttribute("aria-pressed", "true");
+      } else {
+        card.style.border = "none";
+        card.setAttribute("aria-pressed", "false");
+      }
+    });
+    sendButton.disabled = !selectedGift || coinBalance < selectedGift.cost || !senderInput.value.trim();
+  }
+
+  // Update leaderboard UI
+  function updateLeaderboard() {
+    giftLeaderboard.innerHTML = "";
+    const sorted = Object.entries(gifters).sort((a,b) => b[1] - a[1]);
+    sorted.forEach(([name, count]) => {
+      const li = document.createElement("li");
+      li.textContent = `${name}: ${count} gifts sent`;
+      giftLeaderboard.appendChild(li);
+    });
+    localStorage.setItem("gifters", JSON.stringify(gifters));
+  }
+
+  // Send gift handler
+  function sendGift() {
+    const sender = senderInput.value.trim() || "Anonymous";
+
+    if (!selectedGift) {
+      alert("Please select a gift.");
+      return;
+    }
+    if (coinBalance < selectedGift.cost) {
+      alert("Not enough coins!");
+      return;
+    }
+    if (!sender) {
+      alert("Please enter your name.");
+      return;
+    }
+
+    coinBalance -= selectedGift.cost;
+    localStorage.setItem("coins", coinBalance);
+    coinCountEl.textContent = coinBalance;
+
+    gifters[sender] = (gifters[sender] || 0) + 1;
+    updateLeaderboard();
+
+    showGiftAnimation(sender, selectedGift);
+
+    // Update send button disabled state after send
+    updateSelectedGiftUI();
+  }
+
+  // Show gift animation popup
+  function showGiftAnimation(sender, gift) {
+    const anim = document.createElement("div");
+    anim.className = "gift-animation";
+    anim.innerHTML = `<div>${sender} sent <br><strong>${gift.name}</strong></div><img src="${gift.img}" alt="${gift.name}"/>`;
+    document.body.appendChild(anim);
+
+    setTimeout(() => {
+      anim.style.opacity = 0;
+      anim.style.transform = "translate(-50%, -150%) scale(1.5)";
+    }, 100);
+
+    setTimeout(() => anim.remove(), 1600);
+  }
+
+  // Event listeners
+  sendButton.onclick = sendGift;
+
+  senderInput.addEventListener("input", () => {
+    updateSelectedGiftUI();
+  });
+
+  giftSearch.addEventListener("input", e => {
+    renderGifts(e.target.value);
+  });
+
+  // Initial render
+  renderGifts();
+  updateLeaderboard();
+  updateSelectedGiftUI();
+</script>
+
+</body>
+</html>
