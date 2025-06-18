@@ -1,78 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Login</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: Arial;
       background: #f4f4f4;
       display: flex;
+      height: 100vh;
       justify-content: center;
       align-items: center;
-      height: 100vh;
     }
-    .login-box {
+    .container {
       background: white;
       padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-      width: 300px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      width: 320px;
     }
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    input {
+    input, button {
       width: 100%;
       padding: 10px;
       margin-top: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
+      box-sizing: border-box;
     }
     button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 20px;
       background: #28a745;
       color: white;
-      font-weight: bold;
       border: none;
-      border-radius: 6px;
       cursor: pointer;
     }
-    button:hover {
-      background: #218838;
+    .message {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    a {
+      display: block;
+      margin-top: 15px;
+      text-align: center;
+      color: #007bff;
+      text-decoration: none;
     }
   </style>
 </head>
 <body>
-  <div class="login-box">
+  <div class="container">
     <h2>Login</h2>
-    <input type="text" id="username" placeholder="Username" required>
-    <input type="password" id="password" placeholder="Password" required>
+    <input type="text" id="username" placeholder="Username" />
+    <input type="password" id="password" placeholder="Password" />
     <button onclick="login()">Login</button>
+    <div class="message" id="message"></div>
+    <a href="index.html">Don't have an account? Signup here</a>
   </div>
 
   <script>
     function login() {
       const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value.trim();
+      const storedUser = JSON.parse(localStorage.getItem("user"));
 
       if (!username || !password) {
-        alert("Please enter username and password.");
+        showMessage("Please enter both username and password.", "red");
         return;
       }
 
-      // Simple login logic (you can replace with actual check)
-      localStorage.setItem("loggedInUser", username);
-
-      // Optional: initialize balance
-      if (!localStorage.getItem(username + "_coins")) {
-        localStorage.setItem(username + "_coins", "1500"); // default Rs 1500
+      if (!storedUser || storedUser.username !== username || storedUser.password !== password) {
+        showMessage("Invalid username or password.", "red");
+        return;
       }
 
-      window.location.href = "home.html";
+      localStorage.setItem("loggedInUser", username);
+      showMessage("Login successful! Redirecting...", "green");
+
+      setTimeout(() => {
+        window.location.href = "home.html"; // Or wherever you want to redirect
+      }, 1000);
+    }
+
+    function showMessage(msg, color) {
+      const el = document.getElementById("message");
+      el.textContent = msg;
+      el.style.color = color;
     }
   </script>
 </body>
