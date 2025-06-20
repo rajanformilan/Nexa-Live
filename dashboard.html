@@ -3,12 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <title>Live Hosts - Viewer Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #f2f2f2;
       margin: 0;
       padding: 20px;
+      padding-bottom: 80px;
     }
     h1 {
       text-align: center;
@@ -78,6 +80,37 @@
       margin: 0 auto 30px;
       display: block;
     }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+      z-index: 1000;
+    }
+    .bottom-nav button {
+      background: none;
+      border: none;
+      font: inherit;
+      color: #333;
+      text-align: center;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 12px;
+    }
+    .bottom-nav img {
+      width: 24px;
+      height: 24px;
+      margin-bottom: 2px;
+    }
   </style>
 </head>
 <body>
@@ -87,11 +120,25 @@
   <input type="text" id="searchInput" placeholder="Search hosts..." />
   <div class="grid" id="hostList"></div>
 
+  <!-- Bottom Navigation Bar -->
+  <div class="bottom-nav">
+    <button onclick="navigateTo('dashboard.html')">
+      <img src="live.png" alt="Live" />
+      <span>Live</span>
+    </button>
+    <button onclick="navigateTo('party.html')">
+      <img src="party.png" alt="Party" />
+      <span>Party</span>
+    </button>
+    <button onclick="navigateTo('profile.html')">
+      <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Profile" />
+      <span>Profile</span>
+    </button>
+    </div>
   <script>
-    // Get user profile pic from localStorage or fallback URL
     function getUserProfilePic(username) {
       const pic = localStorage.getItem(username + "_profilePic");
-      return pic ? pic : "https://i.pravatar.cc/150?img=11"; // fallback default image
+      return pic ? pic : "https://i.pravatar.cc/150?img=11";
     }
 
     const defaultHosts = [
@@ -117,14 +164,12 @@
       },
     ];
 
-    // Load current user from localStorage (assumed structure {username, profile, isLive})
     const currentUserStr = localStorage.getItem("currentUser");
     let currentUser = null;
     if(currentUserStr) {
       try {
         currentUser = JSON.parse(currentUserStr);
         if(currentUser && currentUser.username) {
-          // Update profile pic for currentUser from localStorage
           currentUser.profile = getUserProfilePic(currentUser.username);
         }
       } catch {
@@ -132,16 +177,13 @@
       }
     }
 
-    // Combine default hosts + currentUser with update or add
     let hosts = [...defaultHosts];
 
     if (currentUser && currentUser.username) {
       const index = hosts.findIndex(h => h.username === currentUser.username);
       if (index !== -1) {
-        // Update existing host info with currentUser info
         hosts[index] = {...hosts[index], ...currentUser};
       } else {
-        // Add currentUser to the start of the list
         hosts.unshift(currentUser);
       }
     }
@@ -168,8 +210,11 @@
 
     function watch(user) {
       alert("Watching " + user);
-      // Example redirect, uncomment when golive.html exists
       // window.location.href = `golive.html?user=${encodeURIComponent(user)}`;
+    }
+
+    function navigateTo(page) {
+      window.location.href = page;
     }
 
     renderHosts();
