@@ -2,15 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Party Broadband Live with 1000+ Gifts</title>
+  <title>Party Broadband Live</title>
   <style>
     body {
-      margin: 0; padding: 0; font-family: Arial, sans-serif;
-      background: #111; color: white;
-      display: flex; flex-direction: column; align-items: center;
-      overflow-x: hidden;
-      height: 100vh;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
     }
+
     header {
       display: flex;
       justify-content: space-between;
@@ -19,46 +24,46 @@
       width: 100%;
       padding: 10px 20px;
       gap: 20px;
-      box-sizing: border-box;
     }
+
     #profile, #timer {
       font-size: 16px;
     }
+
     #live-container {
       flex: 1;
       display: flex;
       justify-content: center;
       align-items: center;
       width: 100%;
-      position: relative;
-      background: black;
     }
+
     #local-player {
       width: 100%;
-      height: 100%;
+      height: 100vh;
       object-fit: cover;
+      background: black;
     }
+
     .controls {
       position: absolute;
       bottom: 100px;
       display: flex;
       justify-content: center;
       gap: 20px;
-      width: 100%;
-      z-index: 10;
     }
+
     .controls button {
       background: none;
       border: none;
       cursor: pointer;
       font-size: 30px;
       color: white;
-      user-select: none;
     }
+
     #gift-btn {
       position: absolute;
       bottom: 40px;
-      right: 20px;
       padding: 10px 16px;
       background: gold;
       border-radius: 5px;
@@ -69,9 +74,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      z-index: 20;
-      border: none;
-      user-select: none;
+      z-index: 10;
     }
 
     /* Gift Panel */
@@ -80,255 +83,104 @@
       bottom: 0;
       left: 0;
       width: 100%;
-      max-height: 60vh;
+      height: 50vh;
       background: rgba(0, 0, 0, 0.95);
       backdrop-filter: blur(10px);
       color: white;
       padding: 15px;
       transform: translateY(100%);
       transition: transform 0.4s ease;
-      z-index: 30;
-      overflow-y: auto;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
+      z-index: 20;
     }
+
     #gift-panel.open {
       transform: translateY(0);
     }
-    #close-gift-panel {
-      align-self: flex-end;
-      font-size: 22px;
-      background: none;
-      border: none;
-      color: gold;
-      cursor: pointer;
-      user-select: none;
-    }
+
     #gift-panel h3 {
       margin-top: 0;
       border-bottom: 1px solid gold;
       padding-bottom: 5px;
     }
-    #gift-search {
-      margin: 10px 0;
+
+    .gift-option {
       padding: 8px;
-      font-size: 16px;
+      border: 1px solid #555;
+      margin: 5px 0;
       border-radius: 5px;
-      border: none;
-      outline: none;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    #senderInput {
-      margin-bottom: 10px;
-      padding: 8px;
-      font-size: 16px;
-      border-radius: 5px;
-      border: none;
-      outline: none;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    #gift-container {
-      flex: 1;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-      gap: 8px;
-      overflow-y: auto;
-      padding-right: 8px;
-      box-sizing: border-box;
-    }
-    .gift-card {
-      background: #222;
-      border-radius: 8px;
-      padding: 10px 6px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
       cursor: pointer;
-      user-select: none;
-      border: 2px solid transparent;
-      transition: border-color 0.2s ease;
     }
-    .gift-card[aria-pressed="true"] {
-      border-color: gold;
+
+    .gift-option:hover {
       background: #333;
     }
-    .gift-icon {
-      font-size: 36px;
-      user-select: none;
-    }
-    .gift-name {
-      margin-top: 6px;
-      font-size: 12px;
-      text-align: center;
-      user-select: none;
-    }
-    .gift-cost {
-      font-size: 11px;
-      color: #ccc;
-      margin-top: 4px;
-      user-select: none;
-    }
-    #send-button {
-      margin-top: 10px;
-      padding: 10px;
-      font-size: 18px;
-      font-weight: bold;
-      background: gold;
-      border: none;
-      border-radius: 6px;
-      color: black;
-      cursor: pointer;
-      user-select: none;
-    }
-    #send-button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    #giftLeaderboard {
-      margin-top: 12px;
-      max-height: 100px;
-      overflow-y: auto;
-      list-style: none;
-      padding-left: 0;
-      font-size: 14px;
-      border-top: 1px solid #444;
-      margin-bottom: 0;
-    }
-    #giftLeaderboard li {
-      margin: 3px 0;
-    }
-    /* Gift animation */
-    .gift-animation {
-      position: fixed;
-      bottom: 150px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(255, 215, 0, 0.9);
-      padding: 10px 20px;
-      border-radius: 10px;
-      font-weight: bold;
-      color: black;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      z-index: 9999;
-      opacity: 1;
-      transition: opacity 1.5s ease, transform 1.5s ease;
-      user-select: none;
-    }
-    .gift-animation .gift-icon {
-      font-size: 40px;
-      user-select: none;
-    }
-    
-    /* Gift Panel */
-#gift-panel {
-  position: fixed;
-  bottom: -100%;
-  left: 0;
-  width: 100%;
-  height: 60vh; /* Fixed height */
-  background: rgba(0, 0, 0, 0.95);
-  backdrop-filter: blur(10px);
-  color: white;
-  padding: 15px;
-  transition: bottom 0.4s ease;
-  z-index: 30;
-  overflow-y: auto;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-}
-#gift-panel.open {
-  bottom: 0;
-}
 
+    #gift-feed {
+      margin-top: 10px;
+      max-height: 40%;
+      overflow-y: auto;
+      border-top: 1px solid #444;
+      padding-top: 10px;
+    }
+
+    .gift-feed-item {
+      margin-bottom: 5px;
+    }
+
+    #close-gift-panel {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 22px;
+      background: none;
+      border: none;
+      color: gold;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
 
   <header>
     <div id="profile">My Coins: <span id="coin-count">0</span></div>
-    <div><strong>Party Broadband LIVE</strong></div>
+    <button onclick="followUser('host_username')" style="background-color: red; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+  + Follow
+</button>
+
+    <div><strong>Broadband LIVE</strong></div>
     <div id="timer">00:00</div>
+    <div class="viewer-count">👁️ 154 viewers</div>
   </header>
 
   <div id="live-container">
     <video id="local-player" autoplay muted playsinline></video>
-
-    <div class="controls">
-      <button id="mute-btn" onclick="toggleMute()">🎤</button>
-      <button id="pause-btn" onclick="togglePause()">⏸️</button>
-    </div>
-
-    <button id="gift-btn" onclick="openGiftPanel()">Gifts 🎁</button>
   </div>
 
+  <div class="controls">
+    <button id="mute-btn" onclick="toggleMute()">🎤</button>
+    <button id="pause-btn" onclick="togglePause()">⏸️</button>
+  </div>
+
+  <button id="gift-btn" onclick="openGiftPanel()"><a href="gifts.html">Gifts 🎁</a></button>
+
   <!-- Gift Panel -->
-  <div id="gift-panel" aria-label="Gift selection panel" role="dialog" aria-modal="true" aria-hidden="true">
-    <button id="close-gift-panel" aria-label="Close gift panel" onclick="closeGiftPanel()">✖</button>
-    <h3>Select a Gift to Send</h3>
-    <input type="text" id="gift-search" placeholder="Search gifts..." aria-label="Search gifts" />
-    <input type="text" id="senderInput" placeholder="Enter your name" aria-label="Enter your name" />
-    <div id="gift-container" tabindex="0" aria-live="polite" aria-relevant="additions"></div>
-    <button id="send-button" disabled>Send Gift</button>
-    <ul id="giftLeaderboard" aria-label="Gift leaderboard"></ul>
+  <div id="gift-panel">
+    <button id="close-gift-panel" onclick="closeGiftPanel()">✖</button>
+    <div id="gift-feed"></div>
   </div>
 
   <script>
-    // Coin balance from localStorage or 0
-    let coinBalance = parseInt(localStorage.getItem("coins")) || 1000;
+    let coinBalance = parseInt(localStorage.getItem("coins")) || 0;
+    let stream = null;
+    let audioTrack = null;
+    let videoPaused = false;
+    let muted = false;
 
-    // Gifts data with emoji icons and names
-    const giftIcons = [
-      "🌹", "🎂", "🚗", "🏰", "👑", "🦄", "✈️", "🚀", "⛵", "💎",
-      "🍫", "🐻", "🌟", "🎈", "🎆", "❤️", "💋", "✨", "🧁", "🐧",
-      "🎸", "🍌", "🐉", "👽", "🌙", "☀️", "🍦", "📚", "🐅", "🐼",
-      "🦁", "🐎", "📷", "🍎", "💻", "🌸", "🎩", "🐇", "🕯️", "🍾",
-      "🎤", "📺", "🚲", "🚜", "🚌", "🚂", "🚚", "🚁"
-    ];
+    document.getElementById("coin-count").textContent = coinBalance;
 
-    const giftNames = [
-      "Lucky Rose", "Magic Cake", "Speedy Car", "Majestic Castle", "Golden Crown", "Mystic Unicorn",
-      "Flying Plane", "Rocket Booster", "Sail Boat", "Diamond Ring", "Shiny Diamond", "Sweet Chocolate",
-      "Teddy Bear", "Shooting Star", "Color Balloon", "Fireworks", "Heart Beat", "Kiss Mark", "Magic Wand",
-      "Cupcake", "Penguin", "Guitar", "Banana", "Dragon", "Alien", "Moonlight", "Sunshine", "Ice Cream", "Book",
-      "Tiger", "Panda", "Lion", "Horse", "Camera", "Apple", "Laptop", "Flower", "Hat", "Bunny",
-      "Candle", "Champagne", "Microphone", "TV", "Bicycle", "Tractor", "Bus", "Train", "Truck", "Helicopter"
-    ];
-
-    // Generate 1000+ gifts
-    const gifts = [];
-    for(let i=1; i<=1000; i++) {
-      const name = giftNames[i % giftNames.length] + " #" + i;
-      const cost = 5 + (i % 50) * 5;  // Cost between 5 to 250 coins
-      const icon = giftIcons[i % giftIcons.length];
-      gifts.push({ name, cost, icon });
-    }
-
-    // Cached DOM elements
-    const coinCountEl = document.getElementById("coin-count");
-    const giftContainer = document.getElementById("gift-container");
-    const sendButton = document.getElementById("send-button");
-    const senderInput = document.getElementById("senderInput");
-    const giftLeaderboard = document.getElementById("giftLeaderboard");
-    const giftSearch = document.getElementById("gift-search");
-    const giftPanel = document.getElementById("gift-panel");
-    const giftBtn = document.getElementById("gift-btn");
-
-    // Other state variables
-    let selectedGift = null;
-    let gifters = JSON.parse(localStorage.getItem("gifters")) || {};
-
-    // Show initial coin balance
-    coinCountEl.textContent = coinBalance;
-
-    // Timer
-    let timerInterval;
+    let timerInterval, earningInterval;
     let secondsElapsed = 0;
+
     function startTimer() {
       timerInterval = setInterval(() => {
         secondsElapsed++;
@@ -338,25 +190,37 @@
       }, 1000);
     }
 
-    // Live Stream Setup
-    let stream = null;
-    let audioTrack = null;
-    let videoPaused = false;
-    let muted = false;
+    function startEarningCoins() {
+      earningInterval = setInterval(() => {
+        coinBalance += 1000 / 60;
+        coinBalance = Math.floor(coinBalance);
+        localStorage.setItem("coins", coinBalance);
+        document.getElementById("coin-count").textContent = coinBalance;
+      }, 60000);
+    }
+
+    function stopTimer() {
+      clearInterval(timerInterval);
+    }
+
+    function stopEarningCoins() {
+      clearInterval(earningInterval);
+    }
 
     async function startLiveStream() {
       try {
         stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         document.getElementById("local-player").srcObject = stream;
         audioTrack = stream.getAudioTracks()[0];
+
         startTimer();
+        startEarningCoins();
       } catch (err) {
         alert("Could not access camera/microphone.");
         console.error(err);
       }
     }
 
-    // Controls handlers
     function toggleMute() {
       if (!audioTrack) return;
       muted = !muted;
@@ -366,178 +230,70 @@
 
     function togglePause() {
       if (!stream) return;
+
       videoPaused = !videoPaused;
       const videoTrack = stream.getVideoTracks()[0];
       videoTrack.enabled = !videoPaused;
 
       if (videoPaused) {
-        clearInterval(timerInterval);
+        stopTimer();
+        stopEarningCoins();
         document.getElementById("pause-btn").textContent = "▶️";
       } else {
         startTimer();
+        startEarningCoins();
         document.getElementById("pause-btn").textContent = "⏸️";
       }
     }
 
-    // Gift panel open/close
     function openGiftPanel() {
-      giftPanel.classList.add("open");
-      giftPanel.setAttribute("aria-hidden", "false");
-      giftSearch.focus();
+      document.getElementById("gift-panel").classList.add("open");
     }
 
     function closeGiftPanel() {
-      giftPanel.classList.remove("open");
-      giftPanel.setAttribute("aria-hidden", "true");
-      selectedGift = null;
-      updateSelectedGiftUI();
+      document.getElementById("gift-panel").classList.remove("open");
     }
 
-    // Render gifts grid with optional filter
-    function renderGifts(filter = "") {
-      giftContainer.innerHTML = "";
-      const filterLower = filter.toLowerCase();
-
-      gifts.filter(g => g.name.toLowerCase().includes(filterLower)).forEach((gift, idx) => {
-        const card = document.createElement("div");
-        card.className = "gift-card";
-        card.tabIndex = 0;
-        card.setAttribute("role", "button");
-        card.setAttribute("aria-pressed", "false");
-        card.innerHTML = `
-          <div class="gift-icon" aria-hidden="true">${gift.icon}</div>
-          <div class="gift-name">${gift.name}</div>
-          <div class="gift-cost">${gift.cost} coins</div>
-        `;
-        card.onclick = () => selectGift(idx);
-        card.onkeydown = e => {
-          if (e.key === "Enter" || e.key === " ") {
-            selectGift(idx);
-            e.preventDefault();
-          }
-        };
-        giftContainer.appendChild(card);
-      });
-
-      updateSelectedGiftUI();
-    }
-
-    // Select gift by index
-    function selectGift(idx) {
-      selectedGift = gifts[idx];
-      updateSelectedGiftUI();
-    }
-
-    // Update selected gift UI & send button
-    function updateSelectedGiftUI() {
-      const cards = document.querySelectorAll(".gift-card");
-      cards.forEach((card, i) => {
-        if (selectedGift && gifts[i].name === selectedGift.name) {
-          card.setAttribute("aria-pressed", "true");
-          card.style.border = "2px solid gold";
-          card.style.background = "#333";
-        } else {
-          card.setAttribute("aria-pressed", "false");
-          card.style.border = "none";
-          card.style.background = "#222";
-        }
-      });
-      sendButton.disabled = !selectedGift || coinBalance < selectedGift.cost || !senderInput.value.trim();
-    }
-
-    // Gift leaderboard update
-    function updateLeaderboard() {
-      giftLeaderboard.innerHTML = "";
-      const sorted = Object.entries(gifters).sort((a,b) => b[1] - a[1]);
-      sorted.forEach(([name, count]) => {
-        const li = document.createElement("li");
-        li.textContent = `${name}: ${count} gifts sent`;
-        giftLeaderboard.appendChild(li);
-      });
-      localStorage.setItem("gifters", JSON.stringify(gifters));
-    }
-
-    // Send gift handler
-    function sendGift() {
-      const sender = senderInput.value.trim() || "Anonymous";
-
-      if (!selectedGift) {
-        alert("Please select a gift.");
-        return;
-      }
-      if (coinBalance < selectedGift.cost) {
+    function sendGift(giftName, giftCost) {
+      if (coinBalance < giftCost) {
         alert("Not enough coins!");
         return;
       }
-      if (!sender) {
-        alert("Please enter your name.");
-        return;
-      }
 
-      // Deduct coins
-      coinBalance -= selectedGift.cost;
+      coinBalance -= giftCost;
       localStorage.setItem("coins", coinBalance);
-      coinCountEl.textContent = coinBalance;
+      document.getElementById("coin-count").textContent = coinBalance;
 
-      // Update gifters count
-      gifters[sender] = (gifters[sender] || 0) + 1;
-      updateLeaderboard();
-
-      // Show animation
-      showGiftAnimation(sender, selectedGift);
-
-      // Reset selection & disable send button
-      selectedGift = null;
-      updateSelectedGiftUI();
+      const feed = document.getElementById("gift-feed");
+      const sender = "You";
+      const item = document.createElement("div");
+      item.classList.add("gift-feed-item");
+      item.innerHTML = `<strong>${sender}</strong> sent <span>${giftName}</span> <small>(${giftCost} coins)</small>`;
+      feed.prepend(item);
     }
 
-    // Gift animation popup
-    function showGiftAnimation(sender, gift) {
-      const anim = document.createElement("div");
-      anim.className = "gift-animation";
-      anim.innerHTML = `<div>${sender} sent <br><strong>${gift.name}</strong></div><div class="gift-icon" aria-hidden="true">${gift.icon}</div>`;
-      document.body.appendChild(anim);
-
-      setTimeout(() => {
-        anim.style.opacity = 0;
-        anim.style.transform = "translate(-50%, -150%) scale(1.5)";
-      }, 100);
-
-      setTimeout(() => anim.remove(), 1600);
-    }
-
-    // Event listeners
-    sendButton.onclick = sendGift;
-
-    senderInput.addEventListener("input", () => {
-      updateSelectedGiftUI();
-    });
-
-    giftSearch.addEventListener("input", e => {
-      renderGifts(e.target.value);
-    });
-
-    // Initial render
-    renderGifts();
-    updateLeaderboard();
-    updateSelectedGiftUI();
-
-    // Start live stream
     startLiveStream();
     
-    
-    
-    function openGiftPanel() {
-  giftPanel.classList.add("open");
-  giftPanel.setAttribute("aria-hidden", "false");
-  giftSearch.focus();
-}
+    function showGiftAnimation(sender, gift) {
+  const anim = document.createElement("div");
+  anim.className = "gift-animation";
+  anim.innerHTML = `<div>${sender} sent<br><strong>${gift.name}</strong></div><img src="${gift.img}" alt="${gift.name}" />`;
+  document.body.appendChild(anim);
 
-function closeGiftPanel() {
-  giftPanel.classList.remove("open");
-  giftPanel.setAttribute("aria-hidden", "true");
-  selectedGift = null;
-  updateSelectedGiftUI();
+  setTimeout(() => {
+    anim.style.opacity = 0;
+    anim.style.transform = "translate(-50%, -150%) scale(1.5)";
+  }, 100);
+
+  setTimeout(() => anim.remove(), 1600);
+}
+function followUser(username) {
+  let follows = JSON.parse(localStorage.getItem("follows") || "[]");
+  if (!follows.includes(username)) {
+    follows.push(username);
+    localStorage.setItem("follows", JSON.stringify(follows));
+    alert("You followed " + username);
+  }
 }
 
   </script>
