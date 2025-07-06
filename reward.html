@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Poppo-Style Reward Center</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: #1f1f1f;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 0 10px rgba(255, 165, 0, 0.2);
+    }
+    h1 {
+      text-align: center;
+      color: orange;
+      margin-bottom: 20px;
+    }
+    .reward-box {
+      background: #292929;
+      padding: 15px;
+      border-radius: 15px;
+      margin-bottom: 15px;
+    }
+    .reward-box h2 {
+      color: #ffa500;
+      margin-bottom: 10px;
+    }
+    button, a > button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: none;
+      background: orange;
+      color: white;
+      font-weight: bold;
+      border-radius: 10px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+    }
+    button:disabled {
+      background: #555;
+      cursor: not-allowed;
+    }
+    .coins {
+      font-size: 24px;
+      text-align: center;
+      color: #ffd700;
+      margin-top: 20px;
+    }
+    .timer {
+      font-weight: bold;
+      color: #00ffcc;
+      margin-top: 5px;
+    }
+    #liveStatus, #crownStatus {
+      margin-bottom: 5px;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎁 Reward Center</h1>
+
+    <!-- Daily Check-In -->
+    <div class="reward-box">
+      <h2>✅ Daily Check-In</h2>
+      <p>Claim 500 coins daily.</p>
+      <button onclick="claimDaily()">Claim Now</button>
+    </div>
+
+    <!-- Live Stream Task -->
+    <div class="reward-box">
+      <h2>🎤 Live Task (1 Hour = 2000 Points)</h2>
+      <div id="liveStatus">Not started</div>
+      <a href="golive.html"><button>Start Live Task</button></a>
+      <div class="timer" id="liveTimer"></div>
+      <button id="liveClaimBtn" onclick="claimTask('live')" disabled>Claim 2000 Points</button>
+      <p>Total Live Points: <span id="livePoints">0</span></p>
+    </div>
+
+    <!-- Crown Seat Task -->
+    <div class="reward-box">
+      <h2>👑 Crown Task (1 Hour = 800 Points)</h2>
+      <div id="crownStatus">Not started</div>
+      <a href="crownsit.html"><button>Start Crown Task</button></a>
+      <div class="timer" id="crownTimer"></div>
+      <button id="crownClaimBtn" onclick="claimTask('crown')" disabled>Claim 800 Points</button>
+      <p>Total Crown Points: <span id="crownPoints">0</span></p>
+    </div>
+
+    <!-- Coin Display -->
+    <div class="coins">
+      💰 Your Coins: <span id="coins">0</span>
+    </div>
+  </div>
+
+  <script>
+    // Load saved points & coins
+    let coins = parseInt(localStorage.getItem('rewardCoins')) || 0;
+    let livePoints = parseInt(localStorage.getItem('livePoints')) || 0;
+    let crownPoints = parseInt(localStorage.getItem('crownPoints')) || 0;
+
+    document.getElementById('coins').innerText = coins;
+    document.getElementById('livePoints').innerText = livePoints;
+    document.getElementById('crownPoints').innerText = crownPoints;
+
+    // Daily check-in logic
+    function claimDaily() {
+      if (localStorage.getItem('claimedToday') === 'true') {
+        alert("You've already claimed today's reward.");
+        return;
+      }
+      coins += 500;
+      localStorage.setItem('rewardCoins', coins);
+      localStorage.setItem('claimedToday', 'true');
+      document.getElementById('coins').innerText = coins;
+      alert("You claimed 50 daily coins!");
+    }
+
+    // Reset daily claim at midnight
+    const now = new Date();
+    const lastReset = localStorage.getItem('lastReset') || 0;
+    if (now.getDate() !== new Date(parseInt(lastReset)).getDate()) {
+      localStorage.setItem('claimedToday', 'false');
+      localStorage.setItem('lastReset', now.getTime());
+    }
+
+    // Timer display and claim button logic
+    function runTimer(type, endTime) {
+      const timerEl = document.getElementById(type + "Timer");
+      const claimBtn = document.getElementById(type + "ClaimBtn");
+      const statusEl = document.getElementById(type + "Status");
+
+      function update() {
+        const remaining = endTime - Date.now();
+        if (remaining <= 0) {
+          clearInterval(interval);
+          timerEl.innerText = "✅ Task Complete!";
+          claimBtn.disabled = false;
+          statusEl.innerText = "Completed!";
+        } else {
+          const m = String(Math.floor((remaining / 1000 / 60) % 60)).padStart(2, '0');
+          const s = String(Math.floor((remaining / 1000) % 60)).padStart(2, '0');
+          timerEl.innerText = `⏳ ${m}:${s}`;
+          claimBtn.disabled = true;
+          statusEl.innerText = "Running...";
+        }
+      }
+
+      update();
+      const interval = setInterval(update, 1000);
+    }
+
+    // Claim points and reset timers
+    function claimTask(type) {
+      const points = type === 'live' ? 2000 : 800;
+      const key = type + "Points";
+      const timerKey = type + "EndTime";
+
+      let current = parseInt(localStorage.getItem(key)) || 0;
+      current += points;
+      localStorage.setItem(key, current);
+      localStorage.removeItem(timerKey);
+
+      alert(`You earned ${points} ${type} points!`);
+
+      // Update UI
+      if (type === 'live') {
+        document.getElementById('livePoints').innerText = current;
+        document.getElementById('liveTimer').innerText = "";
+        document.getElementById('liveClaimBtn').disabled = true;
+        document.getElementById('liveStatus').innerText = "Not started";
+      } else {
+        document.getElementById('crownPoints').innerText = current;
+        document.getElementById('crownTimer').innerText = "";
+        document.getElementById('crownClaimBtn').disabled = true;
+        document.getElementById('crownStatus').innerText = "Not started";
+      }
+    }
+
+    // On page load, check if timers are running
+    ['live', 'crown'].forEach(type => {
+      const endTime = parseInt(localStorage.getItem(type + "EndTime"));
+      if (endTime && endTime > Date.now()) {
+        runTimer(type, endTime);
+      } else if (endTime) {
+        // Timer expired, allow claim
+        document.getElementById(type + "Timer").innerText = "✅ Task Complete!";
+        document.getElementById(type + "ClaimBtn").disabled = false;
+        document.getElementById(type + "Status").innerText = "Completed!";
+      } else {
+        document.getElementById(type + "Timer").innerText = "";
+        document.getElementById(type + "ClaimBtn").disabled = true;
+        document.getElementById(type + "Status").innerText = "Not started";
+      }
+    });
+  </script>
+</body>
+</html>
